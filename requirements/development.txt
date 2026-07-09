@@ -1,0 +1,6 @@
+# Development-only dependencies.
+# -r base.txt
+# django-debug-toolbar
+# ipython
+# pytest
+# pytest-django

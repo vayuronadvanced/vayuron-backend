@@ -1,0 +1,9 @@
+# Core dependencies shared across all environments.
+# To be pinned during implementation, e.g.:
+# Django==5.x
+# djangorestframework==3.x
+# psycopg[binary]==3.x
+# django-cors-headers
+# django-environ
+# django-filter
+# Pillow
