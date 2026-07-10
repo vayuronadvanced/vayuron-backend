@@ -1,6 +1,6 @@
-# Testing-only dependencies.
-# -r base.txt
-# pytest
-# pytest-django
-# pytest-cov
-# factory_boy
+-r base.txt
+
+pytest==8.4.1
+pytest-django==4.11.1
+pytest-cov==6.2.1
+factory-boy==3.3.3

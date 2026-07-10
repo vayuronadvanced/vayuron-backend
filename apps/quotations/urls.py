@@ -1,4 +1,10 @@
-"""
-URL routes placeholder for the 'quotations' app.
-To be implemented: DRF router / urlpatterns for this app's endpoints.
-"""
+from rest_framework.routers import DefaultRouter
+
+from .views import QuotationRequestViewSet
+
+app_name = "quotations"
+
+router = DefaultRouter()
+router.register("", QuotationRequestViewSet, basename="quotation-request")
+
+urlpatterns = router.urls

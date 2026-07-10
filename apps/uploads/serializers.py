@@ -1,4 +1,13 @@
-"""
-DRF serializers placeholder for the 'uploads' app.
-To be implemented: serializers for REST API request/response payloads.
-"""
+from rest_framework import serializers
+
+from .models import UploadedFile
+
+
+class UploadedFileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UploadedFile
+        fields = [
+            "id", "file", "original_filename", "file_type",
+            "size_bytes", "uploaded_by", "description", "created_at",
+        ]
+        read_only_fields = ["id", "uploaded_by", "size_bytes", "created_at"]

@@ -1,4 +1,10 @@
-"""
-URL routes placeholder for the 'uploads' app.
-To be implemented: DRF router / urlpatterns for this app's endpoints.
-"""
+from rest_framework.routers import DefaultRouter
+
+from .views import UploadedFileViewSet
+
+app_name = "uploads"
+
+router = DefaultRouter()
+router.register("", UploadedFileViewSet, basename="uploaded-file")
+
+urlpatterns = router.urls

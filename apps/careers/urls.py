@@ -1,4 +1,11 @@
-"""
-URL routes placeholder for the 'careers' app.
-To be implemented: DRF router / urlpatterns for this app's endpoints.
-"""
+from rest_framework.routers import DefaultRouter
+
+from .views import JobApplicationViewSet, JobListingViewSet
+
+app_name = "careers"
+
+router = DefaultRouter()
+router.register("listings", JobListingViewSet, basename="job-listing")
+router.register("applications", JobApplicationViewSet, basename="job-application")
+
+urlpatterns = router.urls

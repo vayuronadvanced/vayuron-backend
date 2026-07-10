@@ -1,4 +1,7 @@
-"""
-App configuration placeholder for the 'blog' app.
-To be implemented: AppConfig class registering this app with Django.
-"""
+from django.apps import AppConfig
+
+
+class BlogConfig(AppConfig):
+    default_auto_field = "django.db.models.BigAutoField"
+    name = "apps.blog"
+    verbose_name = "Blog"

@@ -1,4 +1,7 @@
-"""
-App configuration placeholder for the 'quotations' app.
-To be implemented: AppConfig class registering this app with Django.
-"""
+from django.apps import AppConfig
+
+
+class QuotationsConfig(AppConfig):
+    default_auto_field = "django.db.models.BigAutoField"
+    name = "apps.quotations"
+    verbose_name = "Quotations"

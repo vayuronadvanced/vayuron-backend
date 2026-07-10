@@ -1,6 +1,6 @@
-# Development-only dependencies.
-# -r base.txt
-# django-debug-toolbar
-# ipython
-# pytest
-# pytest-django
+-r base.txt
+
+django-debug-toolbar==5.2.0
+ipython==9.4.0
+pytest==8.4.1
+pytest-django==4.11.1
