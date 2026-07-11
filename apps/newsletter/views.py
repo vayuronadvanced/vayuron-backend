@@ -1,5 +1,6 @@
 from django.utils import timezone
-from rest_framework import permissions, viewsets
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import filters, permissions, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.throttling import ScopedRateThrottle
@@ -21,6 +22,9 @@ class NewsletterSubscriberViewSet(viewsets.ModelViewSet):
     """
 
     queryset = NewsletterSubscriber.objects.all()
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter]
+    filterset_fields = ["is_active"]
+    search_fields = ["email"]
 
     def get_throttles(self):
         if self.action == "create":
@@ -45,6 +49,9 @@ class NewsletterCampaignViewSet(viewsets.ModelViewSet):
     queryset = NewsletterCampaign.objects.all()
     serializer_class = NewsletterCampaignSerializer
     permission_classes = [IsAdminOrEmployee]
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter]
+    filterset_fields = ["status"]
+    search_fields = ["subject"]
 
     def perform_create(self, serializer):
         serializer.save(sent_by=self.request.user)

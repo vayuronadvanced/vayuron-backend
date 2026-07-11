@@ -14,6 +14,12 @@ class BlogCategory(TimestampedModel):
     slug = models.SlugField(max_length=120, unique=True)
 
     class Meta:
+        # Declaring Meta here replaces (not extends) TimestampedModel.Meta,
+        # so ordering must be restated explicitly or pagination becomes
+        # nondeterministic (caught by Django's UnorderedObjectListWarning
+        # during the Phase 5.4 security/quality review). Alphabetical makes
+        # more sense than created_at for a category filter list anyway.
+        ordering = ["name"]
         verbose_name_plural = "Blog categories"
 
     def __str__(self):

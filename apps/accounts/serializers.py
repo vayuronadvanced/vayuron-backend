@@ -25,6 +25,29 @@ class UserSerializer(serializers.ModelSerializer):
         read_only_fields = ["id", "role", "date_joined"]
 
 
+class AdminUserSerializer(serializers.ModelSerializer):
+    """
+    Admin-only variant: role IS writable here (unlike the self-service
+    UserSerializer above), so admins can promote/demote accounts via the
+    User Management dashboard (Phase 4.1.3).
+    """
+
+    class Meta:
+        model = User
+        fields = [
+            "id",
+            "username",
+            "email",
+            "first_name",
+            "last_name",
+            "role",
+            "phone_number",
+            "is_active",
+            "date_joined",
+        ]
+        read_only_fields = ["id", "date_joined"]
+
+
 class RegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(
         write_only=True, required=True, validators=[validate_password]
