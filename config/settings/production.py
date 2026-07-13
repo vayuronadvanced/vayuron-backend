@@ -48,3 +48,7 @@ LOGGING = {
 # NOTE: Error tracking (e.g. Sentry) to be wired in here once adopted:
 #   import sentry_sdk
 #   sentry_sdk.init(dsn=env("SENTRY_DSN", default=""))
+
+# Real SMTP dispatch. EMAIL_HOST/PORT/HOST_USER/HOST_PASSWORD come from
+# environment variables (see base.py) — set these on the VPS, never commit them.
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"

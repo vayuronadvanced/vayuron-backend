@@ -7,6 +7,7 @@ import pytest
 from django.urls import reverse
 
 from apps.newsletter.models import NewsletterCampaign, NewsletterSubscriber
+from apps.newsletter.utils import generate_unsubscribe_token
 
 pytestmark = pytest.mark.django_db
 
@@ -70,6 +71,41 @@ class TestCampaignSend:
         assert campaign.recipient_count == 2  # only active subscribers counted
         assert campaign.sent_at is not None
 
+    def test_send_actually_dispatches_real_emails(self, employee_client, mailoutbox):
+        """
+        Uses Django's locmem email backend (configured in settings.testing)
+        which captures sent emails in `mailoutbox` instead of a real SMTP
+        connection — lets us assert on actual dispatched content, not just
+        the campaign record's bookkeeping fields.
+        """
+        NewsletterSubscriber.objects.create(email="alice@example.com", is_active=True)
+        NewsletterSubscriber.objects.create(email="bob@example.com", is_active=True)
+
+        campaign = NewsletterCampaign.objects.create(subject="Big News", body="Here's what's new.")
+        url = reverse("newsletter:newsletter-campaign-send", kwargs={"pk": campaign.id})
+        employee_client.post(url)
+
+        assert len(mailoutbox) == 2
+        recipients = {email.to[0] for email in mailoutbox}
+        assert recipients == {"alice@example.com", "bob@example.com"}
+        for email in mailoutbox:
+            assert email.subject == "Big News"
+            assert "Here's what's new." in email.body
+            assert "unsubscribe/" in email.body.lower()
+            # One email per recipient, never BCC-everyone-together.
+            assert len(email.to) == 1
+
+    def test_cannot_send_the_same_campaign_twice(self, employee_client):
+        NewsletterSubscriber.objects.create(email="a@example.com", is_active=True)
+        campaign = NewsletterCampaign.objects.create(subject="Launch", body="...")
+        url = reverse("newsletter:newsletter-campaign-send", kwargs={"pk": campaign.id})
+
+        first = employee_client.post(url)
+        assert first.status_code == 200
+
+        second = employee_client.post(url)
+        assert second.status_code == 400
+
     def test_anonymous_cannot_send_campaign(self, api_client):
         campaign = NewsletterCampaign.objects.create(subject="Launch", body="...")
         url = reverse("newsletter:newsletter-campaign-send", kwargs={"pk": campaign.id})
@@ -82,3 +118,30 @@ class TestCampaignSend:
         url = reverse("newsletter:newsletter-campaign-send", kwargs={"pk": campaign.id})
         response = customer_client.post(url)
         assert response.status_code == 403
+
+
+class TestUnsubscribe:
+    def test_valid_token_unsubscribes(self, api_client):
+        subscriber = NewsletterSubscriber.objects.create(email="leaving@example.com", is_active=True)
+        token = generate_unsubscribe_token(subscriber.id)
+
+        url = reverse("newsletter:unsubscribe", kwargs={"token": token})
+        response = api_client.post(url)
+
+        assert response.status_code == 200
+        subscriber.refresh_from_db()
+        assert subscriber.is_active is False
+        assert subscriber.unsubscribed_at is not None
+
+    def test_invalid_token_rejected(self, api_client):
+        url = reverse("newsletter:unsubscribe", kwargs={"token": "not-a-real-token"})
+        response = api_client.post(url)
+        assert response.status_code == 400
+
+    def test_unsubscribe_requires_no_authentication(self, api_client):
+        """Must work for a logged-out email recipient clicking a link cold."""
+        subscriber = NewsletterSubscriber.objects.create(email="anon@example.com", is_active=True)
+        token = generate_unsubscribe_token(subscriber.id)
+        url = reverse("newsletter:unsubscribe", kwargs={"token": token})
+        response = api_client.post(url)
+        assert response.status_code == 200

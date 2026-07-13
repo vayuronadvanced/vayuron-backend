@@ -151,5 +151,21 @@ CORS_ALLOWED_ORIGINS = env.list(
     default=["http://localhost:5173"]
 )
 
+# The React frontend's public URL. Used to point Django admin's "View site"
+# link at the actual frontend instead of Django's own (route-less) root,
+# which previously led nowhere when clicked from /admin/.
+FRONTEND_URL = env("FRONTEND_URL", default="http://localhost:5173")
+
+# Email (contact forms, newsletters). EMAIL_BACKEND is set per-environment
+# (console backend in development, real SMTP in production) — see
+# settings/development.py and settings/production.py.
+EMAIL_HOST = env("EMAIL_HOST", default="")
+_email_port_raw = env("EMAIL_PORT", default="")
+EMAIL_PORT = int(_email_port_raw) if _email_port_raw.strip() else 587
+EMAIL_HOST_USER = env("EMAIL_HOST_USER", default="")
+EMAIL_HOST_PASSWORD = env("EMAIL_HOST_PASSWORD", default="")
+EMAIL_USE_TLS = env.bool("EMAIL_USE_TLS", default=True)
+DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL", default="Vayuron Advanced Systems <no-reply@vayuronadvancedsystems.com>")
+
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
