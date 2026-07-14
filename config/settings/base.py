@@ -131,6 +131,10 @@ REST_FRAMEWORK = {
         # Applied only to views that set throttle_scope explicitly
         # (public form-submission endpoints), to curb spam/abuse.
         "public_submission": "10/hour",
+        # Tighter limit specifically for login attempts — brute-force
+        # password guessing is a different threat than form spam, so it
+        # gets its own stricter, shorter-window scope.
+        "login": "5/minute",
     },
 }
 

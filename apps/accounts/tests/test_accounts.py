@@ -68,6 +68,28 @@ class TestLogin:
         response = api_client.post(url, {"username": "loginuser2", "password": "wrong"})
         assert response.status_code == 401
 
+    def test_repeated_failed_logins_are_rate_limited(self, api_client):
+        """
+        Brute-force protection: 5 attempts/minute allowed, 6th+ blocked with
+        429, regardless of whether the password was right or wrong.
+        """
+        User.objects.create_user(username="bruteforcetarget", password="correct-password")
+        url = reverse("accounts:token_obtain_pair")
+
+        statuses = [
+            api_client.post(url, {"username": "bruteforcetarget", "password": f"wrong{i}"}).status_code
+            for i in range(6)
+        ]
+        assert statuses[:5] == [401] * 5
+        assert statuses[5] == 429
+
+    def test_legitimate_login_still_works_within_the_rate_limit(self, api_client):
+        User.objects.create_user(username="normaluser", password="correct-password")
+        url = reverse("accounts:token_obtain_pair")
+        response = api_client.post(url, {"username": "normaluser", "password": "correct-password"})
+        assert response.status_code == 200
+        assert "access" in response.data
+
 
 class TestMeEndpoint:
     def test_me_requires_authentication(self, api_client):

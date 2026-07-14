@@ -1,12 +1,14 @@
 """
 Auth and account views: registration, current-user endpoint, and admin-only
-user management. Login/refresh/verify are handled directly by
-rest_framework_simplejwt's built-in views, wired in urls.py.
+user management. Login/refresh/verify build on rest_framework_simplejwt's
+built-in views, wired in urls.py.
 """
 
 from rest_framework import generics, permissions, viewsets
 from rest_framework.response import Response
+from rest_framework.throttling import ScopedRateThrottle
 from rest_framework.views import APIView
+from rest_framework_simplejwt.views import TokenObtainPairView
 
 from apps.core.permissions import IsAdmin
 
@@ -17,10 +19,28 @@ from .serializers import AdminUserSerializer, RegisterSerializer, UserSerializer
 class RegisterView(generics.CreateAPIView):
     """
     Public self-registration. Always creates a Customer-role account.
+    Rate-limited like every other public-write endpoint (Phase 2.5) to
+    curb spam account creation.
     """
 
     serializer_class = RegisterSerializer
     permission_classes = [permissions.AllowAny]
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = "public_submission"
+
+
+class ThrottledTokenObtainPairView(TokenObtainPairView):
+    """
+    Same as simplejwt's TokenObtainPairView, with a strict rate limit added.
+    Login is a brute-force target in a way the other public endpoints
+    aren't (an attacker guessing passwords, not just spamming forms), so
+    it gets its own tighter "login" scope rather than reusing
+    "public_submission" (10/hour would be too loose here, and too strict
+    for a legitimate user who mistypes their password a couple of times).
+    """
+
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = "login"
 
 
 class MeView(APIView):
