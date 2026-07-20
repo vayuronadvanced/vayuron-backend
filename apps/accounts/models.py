@@ -31,10 +31,6 @@ class User(AbstractUser):
     phone_number = models.CharField(
         max_length=20, blank=True, validators=[phone_regex_validator]
     )
-    is_email_verified = models.BooleanField(
-        default=False,
-        help_text="Set once the user clicks the verification link sent to their email.",
-    )
 
     def __str__(self):
         return f"{self.username} ({self.role})"

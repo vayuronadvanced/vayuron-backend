@@ -12,17 +12,8 @@ from rest_framework_simplejwt.views import TokenObtainPairView
 
 from apps.core.permissions import IsAdmin
 
-from .emails import send_password_reset_email, send_verification_email
 from .models import User
-from .serializers import (
-    AdminUserSerializer,
-    EmailVerificationConfirmSerializer,
-    PasswordResetConfirmSerializer,
-    PasswordResetRequestSerializer,
-    RegisterSerializer,
-    ResendVerificationSerializer,
-    UserSerializer,
-)
+from .serializers import AdminUserSerializer, RegisterSerializer, UserSerializer
 
 
 class RegisterView(generics.CreateAPIView):
@@ -36,81 +27,6 @@ class RegisterView(generics.CreateAPIView):
     permission_classes = [permissions.AllowAny]
     throttle_classes = [ScopedRateThrottle]
     throttle_scope = "public_submission"
-
-    def perform_create(self, serializer):
-        user = serializer.save()
-        send_verification_email(user)
-
-
-class PasswordResetRequestView(APIView):
-    """
-    Public: kicks off the forgot-password flow. Always returns 200 with a
-    generic message whether or not the email matches an account, so the
-    endpoint can't be used to enumerate registered addresses.
-    """
-
-    permission_classes = [permissions.AllowAny]
-    throttle_classes = [ScopedRateThrottle]
-    throttle_scope = "public_submission"
-
-    def post(self, request):
-        serializer = PasswordResetRequestSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        user = User.objects.filter(email__iexact=serializer.validated_data["email"]).first()
-        if user is not None:
-            send_password_reset_email(user)
-        return Response(
-            {"detail": "If an account exists for that email, a reset link has been sent."}
-        )
-
-
-class PasswordResetConfirmView(APIView):
-    """Public: consumes the {uid, token} pair from the emailed link and sets
-    the new password."""
-
-    permission_classes = [permissions.AllowAny]
-    throttle_classes = [ScopedRateThrottle]
-    throttle_scope = "public_submission"
-
-    def post(self, request):
-        serializer = PasswordResetConfirmSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response({"detail": "Password has been reset. You can now log in."})
-
-
-class ResendVerificationView(APIView):
-    """Public: re-sends the verification email. Same anti-enumeration
-    behaviour as password reset — always 200."""
-
-    permission_classes = [permissions.AllowAny]
-    throttle_classes = [ScopedRateThrottle]
-    throttle_scope = "public_submission"
-
-    def post(self, request):
-        serializer = ResendVerificationSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        user = User.objects.filter(
-            email__iexact=serializer.validated_data["email"], is_email_verified=False
-        ).first()
-        if user is not None:
-            send_verification_email(user)
-        return Response(
-            {"detail": "If an unverified account exists for that email, a link has been sent."}
-        )
-
-
-class EmailVerificationConfirmView(APIView):
-    """Public: consumes the {uid, token} pair from the emailed link and
-    marks the account verified."""
-
-    permission_classes = [permissions.AllowAny]
-
-    def post(self, request):
-        serializer = EmailVerificationConfirmSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response({"detail": "Email verified successfully."})
 
 
 class ThrottledTokenObtainPairView(TokenObtainPairView):

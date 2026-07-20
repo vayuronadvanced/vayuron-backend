@@ -8,16 +8,7 @@ from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 from rest_framework_simplejwt.views import TokenRefreshView, TokenVerifyView
 
-from .views import (
-    EmailVerificationConfirmView,
-    MeView,
-    PasswordResetConfirmView,
-    PasswordResetRequestView,
-    RegisterView,
-    ResendVerificationView,
-    ThrottledTokenObtainPairView,
-    UserViewSet,
-)
+from .views import MeView, RegisterView, ThrottledTokenObtainPairView, UserViewSet
 
 app_name = "accounts"
 
@@ -30,21 +21,5 @@ urlpatterns = [
     path("token/", ThrottledTokenObtainPairView.as_view(), name="token_obtain_pair"),
     path("token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
     path("token/verify/", TokenVerifyView.as_view(), name="token_verify"),
-    path("password-reset/", PasswordResetRequestView.as_view(), name="password_reset_request"),
-    path(
-        "password-reset/confirm/",
-        PasswordResetConfirmView.as_view(),
-        name="password_reset_confirm",
-    ),
-    path(
-        "email-verification/resend/",
-        ResendVerificationView.as_view(),
-        name="email_verification_resend",
-    ),
-    path(
-        "email-verification/confirm/",
-        EmailVerificationConfirmView.as_view(),
-        name="email_verification_confirm",
-    ),
     path("", include(router.urls)),
 ]
