@@ -2,6 +2,8 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 
+from apps.core.urls import search_urlpatterns
+
 urlpatterns = [
     path("admin/", admin.site.urls),
 
@@ -14,6 +16,7 @@ urlpatterns = [
     path("api/newsletter/", include("apps.newsletter.urls")),
     path("api/quotations/", include("apps.quotations.urls")),
     path("api/uploads/", include("apps.uploads.urls")),
+    path("api/", include((search_urlpatterns, "search"))),
 ]
 
 if settings.DEBUG:

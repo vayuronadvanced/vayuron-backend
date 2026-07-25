@@ -135,6 +135,10 @@ REST_FRAMEWORK = {
         # password guessing is a different threat than form spam, so it
         # gets its own stricter, shorter-window scope.
         "login": "5/minute",
+        # Generous enough for normal debounced-typing search traffic
+        # (roughly 1/sec) while still capping abuse/scraping of the
+        # search endpoint.
+        "search": "60/minute",
     },
 }
 
